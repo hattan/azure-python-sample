@@ -2,20 +2,12 @@
 This example illustrates how to update a VM's tags
 """
 import os
-from datetime import datetime
 from azure.mgmt.compute import ComputeManagementClient
 from msrestazure.azure_active_directory import ServicePrincipalCredentials
 
-def get_credentials():
-  credentials = ServicePrincipalCredentials(
-    os.environ["CLIENT_ID"], os.environ["CLIENT_SECRET"], tenant=os.environ["TENANT_ID"]
-  ) 
-  return credentials 
-
 def get_compute_management_client():
-  subscription_id = os.environ["SUBSCRIPTION_ID"]
-  credentials = get_credentials()
-  return ComputeManagementClient(credentials, subscription_id)
+  credentials = ServicePrincipalCredentials("<CLIENT_ID>", "<CLIENT_SECRET>", "<TENANT_ID>") 
+  return ComputeManagementClient(credentials, "<SUBSCRIPTION_ID_ID>")
 
 def get_vm_details(compute_client, vm_resource_group, vm_name):
   vm = compute_client.virtual_machines.get(
@@ -34,11 +26,10 @@ def update_vm(compute_client, resource_group, name, tags, location):
     }
   )
 
-def add_ansible_tags(vm):
-  epochTime = int(datetime.now().timestamp())
+def add_tags(vm):
   tags = vm.tags
-  vm.tags['ansible-complete']=1
-  vm.tags['ansible-complete-time']=epochTime
+  vm.tags['tag1']=1234
+  vm.tags['foo']="bar"
   return tags
 
 def remove_tag_if_exists(tags, tag_to_remove):
@@ -47,13 +38,13 @@ def remove_tag_if_exists(tags, tag_to_remove):
 
 def main():
   compute_client = get_compute_management_client()  
-  vm_resource_group =os.environ["VM_RESOURCE_GROUP"]
-  vm_name = "hattantest400"
+  resource_group = "<RESOURCE_GROUP_NAME>"
+  vm_name = "<VM_NAME_HERE>"
   
-  vm = get_vm_details(compute_client, vm_resource_group, vm_name)
-  tags = add_ansible_tags(vm)
+  vm = get_vm_details(compute_client, resource_group, vm_name)
+  tags = add_tags(vm)
   
-  update_vm(compute_client, vm_resource_group, vm_name, tags, vm.location)
+  update_vm(compute_client, resource_group, vm_name, tags, vm.location)
 
 if __name__ == "__main__":
   main()
